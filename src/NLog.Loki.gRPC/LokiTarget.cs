@@ -1,15 +1,11 @@
-using System;
 using System.Collections.Generic;
-using System.IO.Compression;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Net.Client;
 using Logproto;
 using NLog.Config;
-using NLog.Layouts;
 using NLog.Loki.gRPC.Model;
 using NLog.Targets;
 using static Logproto.Pusher;
@@ -25,22 +21,12 @@ namespace NLog.Loki
         [RequiredParameter]
         public string Endpoint { get; set; }
 
-        public Layout Username { get; set; }
-
-        public Layout Password { get; set; }
-
         /// <summary>
         /// Orders the logs by timestamp before sending them to Loki.
         /// Required as <see langword="true"/> before Loki v2.4. Leave as <see langword="false"/> if you are running Loki v2.4 or above.
         /// See <see href="https://grafana.com/docs/loki/latest/configuration/#accept-out-of-order-writes"/>.
         /// </summary>
         public bool OrderWrites { get; set; } = true;
-
-        /// <summary>
-        /// Defines if the HTTP messages sent to Loki must be gzip compressed, and with which compression level.
-        /// Possible values: NoCompression (default), Optimal, Fastest and SmallestSize (.NET 6 support only).
-        /// </summary>
-        public CompressionLevel CompressionLevel { get; set; } = CompressionLevel.NoCompression;
 
         [ArrayParameter(typeof(LokiTargetLabel), "label")]
         public IList<LokiTargetLabel> Labels { get; } = new List<LokiTargetLabel>();
@@ -68,7 +54,7 @@ namespace NLog.Loki
                 Line = @event.Line,
                 Timestamp = new Google.Protobuf.WellKnownTypes.Timestamp
                 {
-                    Seconds = (long)ConvertToUnixTimestamp(@event.Timestamp)
+                    Seconds = UnixDateTimeConverter.ToUnixTimeNs(@event.Timestamp)
                 }
             });
 
@@ -85,13 +71,19 @@ namespace NLog.Loki
                 .Select((gp) =>
                 {
                     var stream = new StreamAdapter { Labels = FormatLabels(gp.Key.Labels) };
+
+                    // Order events by timestamp if required
+                    IEnumerable<LokiEvent> orderedEvents = gp;
+                    if(OrderWrites)
+                        orderedEvents = gp.OrderBy(e => e.Timestamp);
+
                     foreach(var @event in gp)
                         stream.Entries.Add(new EntryAdapter()
                         {
                             Line = @event.Line,
                             Timestamp = new Google.Protobuf.WellKnownTypes.Timestamp
                             {
-                                Seconds = (long)ConvertToUnixTimestamp(@event.Timestamp)
+                                Seconds = UnixDateTimeConverter.ToUnixTimeNs(@event.Timestamp)
                             }
                         });
                     return stream;
@@ -100,13 +92,6 @@ namespace NLog.Loki
             var query = new PushRequest();
             query.Streams.AddRange(streams);
             _ = await _pusherClient.PushAsync(query);
-        }
-
-        private static double ConvertToUnixTimestamp(DateTime date)
-        {
-            var origin = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            var diff = date.ToUniversalTime() - origin;
-            return Math.Floor(diff.TotalSeconds);
         }
 
         private string FormatLabels(ISet<LokiLabel> labels)
@@ -137,17 +122,6 @@ namespace NLog.Loki
 
             var line = RenderLogEvent(Layout, logEvent);
             return new LokiEvent(labels, logEvent.TimeStamp, line);
-        }
-
-        internal static ILokiHttpClient GetLokiHttpClient(Uri uri, string username, string password)
-        {
-            var httpClient = new HttpClient { BaseAddress = uri };
-            if(!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
-            {
-                var byteArray = Encoding.ASCII.GetBytes($"{username}:{password}");
-                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-            }
-            return new LokiHttpClient(httpClient);
         }
 
         private bool _isDisposed;
