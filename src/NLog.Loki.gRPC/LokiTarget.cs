@@ -16,7 +16,7 @@ namespace NLog.Loki;
 public class LokiTarget : AsyncTaskTarget
 {
     [RequiredParameter]
-    public string Endpoint { get; set; }
+    public Layout Endpoint { get; set; }
 
     /// <summary>
     /// Orders the logs by timestamp before sending them to Loki.
@@ -34,7 +34,7 @@ public class LokiTarget : AsyncTaskTarget
     {
         base.InitializeTarget();
 
-        _channel = GrpcChannel.ForAddress(Endpoint);
+        _channel = GrpcChannel.ForAddress(RenderLogEvent(EndPoint, LogEventInfo.CreateNullEvent()));
         _pusherClient = new PusherClient(_channel);
     }
 
