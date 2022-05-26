@@ -1,0 +1,34 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    env:
+      # Nuget package version taken from the tag itself
+      version: ${{github.ref_name}}
+    name: Publish NuGet Package
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.100
+    - name: Install Dependencies
+      run: dotnet restore .\\src\\NLog.Loki.sln
+    - name: Build
+      run: dotnet build .\\src\\NLog.Loki.sln --configuration Release --no-restore
+    - name: Publish
+      id: publish
+      uses: alirezanet/publish-nuget@v3.0.0
+      with:
+        PROJECT_FILE_PATH: ./src/NLog.Loki/NLog.Loki.csproj
+        VERSION_STATIC: ${{env.version}}
+        NUGET_KEY: ${{secrets.NUGET_KEY}}
+        INCLUDE_SYMBOLS: true
+        TAG_COMMIT: false

@@ -1,0 +1,30 @@
+name: Build
+
+on: [ push, pull_request ]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: |
+          6.0.x
+          3.1.x
+    - name: Install Dependencies
+      run: dotnet restore .\\src\\NLog.Loki.sln
+    - name: Build
+      run: dotnet build .\\src\\NLog.Loki.sln --configuration Release --no-restore
+    - name: Test
+      run: dotnet test .\\src\\NLog.Loki.sln --no-restore --verbosity normal --collect:"XPlat Code Coverage"
+
+    - uses: codecov/codecov-action@v2
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: ./src/NLog.Loki.Tests/TestResults
+        fail_ci_if_error: true
+        verbose: true
