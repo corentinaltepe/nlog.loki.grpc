@@ -20,14 +20,14 @@ jobs:
       with:
         dotnet-version: 6.0.100
     - name: Install Dependencies
-      run: dotnet restore .\\src\\NLog.Loki.sln
+      run: dotnet restore .\\src\\NLog.Loki.gRPC.sln
     - name: Build
-      run: dotnet build .\\src\\NLog.Loki.sln --configuration Release --no-restore
+      run: dotnet build .\\src\\NLog.Loki.gRPC.sln --configuration Release --no-restore
     - name: Publish
       id: publish
       uses: alirezanet/publish-nuget@v3.0.0
       with:
-        PROJECT_FILE_PATH: ./src/NLog.Loki/NLog.Loki.csproj
+        PROJECT_FILE_PATH: ./src/NLog.Loki.gRPC/NLog.Loki.gRPC.csproj
         VERSION_STATIC: ${{env.version}}
         NUGET_KEY: ${{secrets.NUGET_KEY}}
         INCLUDE_SYMBOLS: true
