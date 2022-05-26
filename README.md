@@ -3,7 +3,7 @@
 > This library is not production ready. This is a work in progress!
 
 ![Build](https://github.com/corentinaltepe/nlog.loki.grpc/workflows/Build/badge.svg)
-
+[![NuGet](https://img.shields.io/nuget/v/NLog.Targets.Loki.gRPC)](https://www.nuget.org/packages/NLog.Targets.Loki.gRPC)
 [![codecov](https://codecov.io/gh/corentinaltepe/nlog.loki.grpc/branch/master/graph/badge.svg?token=84N5XB4J09)](https://codecov.io/gh/corentinaltepe/nlog.loki.grpc)
 
 This is an [NLog](https://nlog-project.org/) target that sends messages to [Loki](https://grafana.com/oss/loki/) using Loki's with a gRPC client.
