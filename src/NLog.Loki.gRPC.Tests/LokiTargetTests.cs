@@ -78,21 +78,5 @@ public class LokiTargetTests
 
         LogManager.Shutdown();
     }
-
-    [Test]
-    [TestCase("${environment:SCHEME}://${environment:HOST}:3100/", ExpectedResult = typeof(HttpLokiTransport))]
-    [TestCase("udp://${environment:HOST}:3100/", ExpectedResult = typeof(NullLokiTransport))]
-    [TestCase("", ExpectedResult = typeof(NullLokiTransport))]
-    [TestCase(null, ExpectedResult = typeof(NullLokiTransport))]
-    public Type GetLokiTransport(string endpointLayout)
-    {
-        Environment.SetEnvironmentVariable("SCHEME", "https");
-        Environment.SetEnvironmentVariable("HOST", "loki.lvh.me");
-
-        var endpoint = Layout.FromString(endpointLayout);
-        using var target = new LokiTarget();
-        using var lokiTargetTransport = target.GetLokiTransport(endpoint, null, null, false);
-        return lokiTargetTransport.GetType();
-    }
 }
 

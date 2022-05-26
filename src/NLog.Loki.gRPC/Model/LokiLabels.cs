@@ -6,14 +6,11 @@ namespace NLog.Loki.gRPC.Model
 {
     public class LokiLabels : IEquatable<LokiLabels>
     {
-        private readonly int hashCode;
+        private readonly int _hashCode;
 
         public ISet<LokiLabel> Labels { get; }
 
-        public LokiLabels(params LokiLabel[] labels) :
-            this((IEnumerable<LokiLabel>)labels)
-        {
-        }
+        public LokiLabels(params LokiLabel[] labels) : this((IEnumerable<LokiLabel>)labels) { }
 
         public LokiLabels(IEnumerable<LokiLabel> labels)
         {
@@ -21,7 +18,7 @@ namespace NLog.Loki.gRPC.Model
 
             unchecked
             {
-                hashCode =
+                _hashCode =
                     Labels.Aggregate(0,
                         (current, label) => (current * 397) ^ label.GetHashCode());
             }
@@ -29,22 +26,27 @@ namespace NLog.Loki.gRPC.Model
 
         public bool Equals(LokiLabels other)
         {
-            if(ReferenceEquals(null, other)) return false;
-            if(ReferenceEquals(this, other)) return true;
+            if(ReferenceEquals(null, other))
+                return false;
+            if(ReferenceEquals(this, other))
+                return true;
             return Labels.SetEquals(other.Labels);
         }
 
         public override bool Equals(object other)
         {
-            if(ReferenceEquals(null, other)) return false;
-            if(ReferenceEquals(this, other)) return true;
-            if(other.GetType() != this.GetType()) return false;
+            if(ReferenceEquals(null, other))
+                return false;
+            if(ReferenceEquals(this, other))
+                return true;
+            if(other.GetType() != this.GetType())
+                return false;
             return Equals((LokiLabels)other);
         }
 
         public override int GetHashCode()
         {
-            return hashCode;
+            return _hashCode;
         }
 
         public static bool operator ==(LokiLabels left, LokiLabels right)

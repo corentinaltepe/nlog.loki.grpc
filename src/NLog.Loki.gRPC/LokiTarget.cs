@@ -6,21 +6,24 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using NLog.Common;
+using Grpc.Net.Client;
+using Logproto;
 using NLog.Config;
 using NLog.Layouts;
 using NLog.Loki.gRPC.Model;
 using NLog.Targets;
+using static Logproto.Pusher;
 
 namespace NLog.Loki
 {
-    [Target("loki")]
+    [Target("loki.grpc")]
     public class LokiTarget : AsyncTaskTarget
     {
-        private readonly Lazy<ILokiTransport> _lazyLokiTransport;
+        private GrpcChannel _channel;
+        private PusherClient _pusherClient;
 
         [RequiredParameter]
-        public Layout Endpoint { get; set; }
+        public string Endpoint { get; set; }
 
         public Layout Username { get; set; }
 
@@ -40,64 +43,100 @@ namespace NLog.Loki
         public CompressionLevel CompressionLevel { get; set; } = CompressionLevel.NoCompression;
 
         [ArrayParameter(typeof(LokiTargetLabel), "label")]
-        public IList<LokiTargetLabel> Labels { get; }
+        public IList<LokiTargetLabel> Labels { get; } = new List<LokiTargetLabel>();
 
-        private static Func<Uri, string, string, ILokiHttpClient> LokiHttpClientFactory { get; } = GetLokiHttpClient;
-
-        public LokiTarget()
+        protected override void InitializeTarget()
         {
-            Labels = new List<LokiTargetLabel>();
+            base.InitializeTarget();
 
-            _lazyLokiTransport = new Lazy<ILokiTransport>(
-                () => GetLokiTransport(Endpoint, Username, Password, OrderWrites),
-                LazyThreadSafetyMode.ExecutionAndPublication);
-            InitializeTarget();
+            _channel = GrpcChannel.ForAddress(Endpoint);
+            _pusherClient = new PusherClient(_channel);
         }
 
-        protected override Task WriteAsyncTask(LogEventInfo logEvent, CancellationToken cancellationToken)
+        protected override void CloseTarget()
+        {
+            _channel?.Dispose();
+            base.CloseTarget();
+        }
+
+        protected override async Task WriteAsyncTask(LogEventInfo logEvent, CancellationToken cancellationToken)
         {
             var @event = GetLokiEvent(logEvent);
-            return _lazyLokiTransport.Value.WriteLogEventsAsync(@event);
+            var stream = new StreamAdapter { Labels = FormatLabels(@event.Labels.Labels) };
+            stream.Entries.Add(new EntryAdapter()
+            {
+                Line = @event.Line,
+                Timestamp = new Google.Protobuf.WellKnownTypes.Timestamp
+                {
+                    Seconds = (long)ConvertToUnixTimestamp(@event.Timestamp)
+                }
+            });
+
+            var query = new PushRequest();
+            query.Streams.Add(stream);
+            _ = await _pusherClient.PushAsync(query);
         }
 
-        protected override Task WriteAsyncTask(IList<LogEventInfo> logEvents, CancellationToken cancellationToken)
+        protected override async Task WriteAsyncTask(IList<LogEventInfo> logEvents, CancellationToken cancellationToken)
         {
-            var events = GetLokiEvents(logEvents);
-            return _lazyLokiTransport.Value.WriteLogEventsAsync(events);
+            var events = logEvents.Select(GetLokiEvent);
+            var streams = events
+                .GroupBy(le => le.Labels)
+                .Select((gp) =>
+                {
+                    var stream = new StreamAdapter { Labels = FormatLabels(gp.Key.Labels) };
+                    foreach(var @event in gp)
+                        stream.Entries.Add(new EntryAdapter()
+                        {
+                            Line = @event.Line,
+                            Timestamp = new Google.Protobuf.WellKnownTypes.Timestamp
+                            {
+                                Seconds = (long)ConvertToUnixTimestamp(@event.Timestamp)
+                            }
+                        });
+                    return stream;
+                });
+
+            var query = new PushRequest();
+            query.Streams.AddRange(streams);
+            _ = await _pusherClient.PushAsync(query);
         }
 
-        private IEnumerable<LokiEvent> GetLokiEvents(IEnumerable<LogEventInfo> logEvents)
+        private static double ConvertToUnixTimestamp(DateTime date)
         {
-            return logEvents.Select(GetLokiEvent);
+            var origin = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            var diff = date.ToUniversalTime() - origin;
+            return Math.Floor(diff.TotalSeconds);
+        }
+
+        private string FormatLabels(ISet<LokiLabel> labels)
+        {
+            // Estimate capacity
+            var capacity = 1;
+            foreach(var l in labels)
+                capacity += l.Label.Length + l.Value.Length + 4;
+            var strBuilder = new StringBuilder("{", capacity);
+            foreach(var l in labels)
+            {
+                strBuilder = strBuilder
+                    .Append(l.Label)
+                    .Append("=\"")
+                    .Append(l.Value)
+                    .Append("\",");
+            }
+            strBuilder.Length -= 1;
+            strBuilder = strBuilder.Append('}');
+
+            return strBuilder.ToString();
         }
 
         private LokiEvent GetLokiEvent(LogEventInfo logEvent)
         {
-            var labels = new LokiLabels(
-                Labels.Select(ltl => new LokiLabel(ltl.Name, ltl.Layout.Render(logEvent))));
+            var lokiLabels = Labels.Select(label => new LokiLabel(label.Name, label.Layout.Render(logEvent)));
+            var labels = new LokiLabels(lokiLabels);
 
             var line = RenderLogEvent(Layout, logEvent);
-
-            var @event = new LokiEvent(labels, logEvent.TimeStamp, line);
-
-            return @event;
-        }
-
-        internal ILokiTransport GetLokiTransport(
-            Layout endpoint, Layout username, Layout password, bool orderWrites)
-        {
-            var endpointUri = RenderLogEvent(endpoint, LogEventInfo.CreateNullEvent());
-            var usr = RenderLogEvent(username, LogEventInfo.CreateNullEvent());
-            var pwd = RenderLogEvent(password, LogEventInfo.CreateNullEvent());
-
-            if(Uri.TryCreate(endpointUri, UriKind.Absolute, out var uri))
-            {
-                if(uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
-                    return new HttpLokiTransport(LokiHttpClientFactory(uri, usr, pwd), orderWrites, CompressionLevel);
-            }
-
-            InternalLogger.Warn("Unable to create a valid Loki Endpoint URI from '{0}'", endpoint);
-            return new NullLokiTransport();
+            return new LokiEvent(labels, logEvent.TimeStamp, line);
         }
 
         internal static ILokiHttpClient GetLokiHttpClient(Uri uri, string username, string password)
@@ -118,8 +157,7 @@ namespace NLog.Loki
             {
                 if(isDisposing)
                 {
-                    if(_lazyLokiTransport.IsValueCreated)
-                        _lazyLokiTransport.Value.Dispose();
+                    _channel?.Dispose();
                 }
                 _isDisposed = true;
             }
