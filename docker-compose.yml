@@ -1,7 +1,6 @@
 version: "3"
 
-# Runs loki as a docker container, enabling running the benchmark.
-  
+# Runs loki and grafana as docker containers
 services:
   loki:
     image: grafana/loki
