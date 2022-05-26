@@ -18,7 +18,7 @@
     <PackageReference Include="NLog" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NLog.Loki\NLog.Loki.csproj" />
+    <ProjectReference Include="..\NLog.Loki.gRPC\NLog.Loki.gRPC.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="nlog.config">

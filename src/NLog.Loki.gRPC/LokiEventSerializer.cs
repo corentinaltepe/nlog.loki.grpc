@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using NLog.Loki.Model;
+using NLog.Loki.gRPC.Model;
 
 namespace NLog.Loki;
 

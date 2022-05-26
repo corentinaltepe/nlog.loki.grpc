@@ -1,24 +1,26 @@
-# NLog Loki Target
+# NLog Loki gRPC Target
 
-![Build](https://github.com/corentinaltepe/nlog.loki/workflows/Build/badge.svg)
-[![NuGet](https://img.shields.io/nuget/v/NLog.Targets.Loki)](https://www.nuget.org/packages/NLog.Targets.Loki)
-[![codecov](https://codecov.io/gh/corentinaltepe/nlog.loki/branch/master/graph/badge.svg?token=84N5XB4J09)](https://codecov.io/gh/corentinaltepe/nlog.loki)
+> This library is not production ready. This is a work in progress!
 
-This is an [NLog](https://nlog-project.org/) target that sends messages to [Loki](https://grafana.com/oss/loki/) using Loki's HTTP Push API. Available on .NET Standard 2.0 (.NET Core 2.0, .NET Framework 4.6.1 and above).
+![Build](https://github.com/corentinaltepe/nlog.loki.grpc/workflows/Build/badge.svg)
+
+[![codecov](https://codecov.io/gh/corentinaltepe/nlog.loki.grpc/branch/master/graph/badge.svg?token=84N5XB4J09)](https://codecov.io/gh/corentinaltepe/nlog.loki.grpc)
+
+This is an [NLog](https://nlog-project.org/) target that sends messages to [Loki](https://grafana.com/oss/loki/) using Loki's with a gRPC client.
 
 > Loki is a horizontally-scalable, highly-available, multi-tenant log aggregation system inspired by Prometheus. It is designed to be very cost effective and easy to operate.
 
 ## Installation
 
-The NLog.Loki NuGet package can be found [here](https://www.nuget.org/packages/NLog.Targets.Loki). You can install it via one of the following commands below:
+The NLog.Loki NuGet package can be found [here](https://www.nuget.org/packages/NLog.Targets.Loki.gRPC). You can install it via one of the following commands below:
 
 NuGet command:
 
-    Install-Package NLog.Targets.Loki
+    Install-Package NLog.Targets.Loki.gRPC
 
 .NET Core CLI command:
 
-    dotnet add package NLog.Targets.Loki
+    dotnet add package NLog.Targets.Loki.gRPC
 
 ## Usage
 
@@ -29,7 +31,7 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   
   <extensions>
-    <add assembly="NLog.Loki" />
+    <add assembly="NLog.Loki.gRPC" />
   </extensions>
 
   <!-- Loki target is async, so there is no need to wrap it in an async target wrapper. -->
@@ -75,7 +77,8 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
 `label` elements can be used to enrich messages with additional [labels](https://grafana.com/docs/loki/latest/design-documents/labels/). `label/@layout` support usual NLog layout renderers.
 
 ### Async Target
-`NLog.Loki` is an [async target](https://github.com/NLog/NLog/wiki/How-to-write-a-custom-async-target#asynctasktarget-features). You should **not** wrap it in an [AsyncWrapper target](https://github.com/NLog/NLog/wiki/AsyncWrapper-target). The following configuration options are supported. Make sure to adjust them to the expected throughput and criticality of your application's logs, especially the batch size, retry count and task delay.
+
+`NLog.Loki.gRPC` is an [async target](https://github.com/NLog/NLog/wiki/How-to-write-a-custom-async-target#asynctasktarget-features). You should **not** wrap it in an [AsyncWrapper target](https://github.com/NLog/NLog/wiki/AsyncWrapper-target). The following configuration options are supported. Make sure to adjust them to the expected throughput and criticality of your application's logs, especially the batch size, retry count and task delay.
 
 `taskTimeoutSeconds` - How many seconds a Task is allowed to run before it is cancelled (default 150 secs).
 

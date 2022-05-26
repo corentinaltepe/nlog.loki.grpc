@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using NLog.Common;
 using NLog.Config;
 using NLog.Layouts;
-using NLog.Loki.Model;
+using NLog.Loki.gRPC.Model;
 using NLog.Targets;
 
 namespace NLog.Loki

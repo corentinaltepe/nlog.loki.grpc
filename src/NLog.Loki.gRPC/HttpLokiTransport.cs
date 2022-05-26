@@ -5,7 +5,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using NLog.Common;
-using NLog.Loki.Model;
+using NLog.Loki.gRPC.Model;
 
 namespace NLog.Loki;
 

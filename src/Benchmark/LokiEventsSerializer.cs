@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using BenchmarkDotNet.Attributes;
-using NLog.Loki.Model;
+using NLog.Loki.gRPC.Model;
 
 namespace Benchmark;
 

@@ -8,10 +8,10 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using Moq;
-using NLog.Loki.Model;
+using NLog.Loki.gRPC.Model;
 using NUnit.Framework;
 
-namespace NLog.Loki.Tests;
+namespace NLog.Loki.gRPC.Tests;
 
 public class HttpLokiTransportTests
 {

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using NLog.Loki.Model;
+using NLog.Loki.gRPC.Model;
 
 namespace NLog.Loki;
 

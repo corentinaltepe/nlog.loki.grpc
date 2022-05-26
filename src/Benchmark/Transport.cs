@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using NLog.Loki;
-using NLog.Loki.Model;
+using NLog.Loki.gRPC.Model;
 
 namespace Benchmark;
 
