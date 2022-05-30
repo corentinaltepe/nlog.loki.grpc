@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -49,12 +50,14 @@ public class LokiTarget : AsyncTaskTarget
     {
         var @event = GetLokiEvent(logEvent);
         var stream = new StreamAdapter { Labels = FormatLabels(@event.Labels.Labels) };
+        var nano = UnixDateTimeConverter.ToUnixTimeNs(@event.Timestamp);
         stream.Entries.Add(new EntryAdapter()
         {
             Line = @event.Line,
             Timestamp = new Google.Protobuf.WellKnownTypes.Timestamp
             {
-                Seconds = UnixDateTimeConverter.ToUnixTimeNs(@event.Timestamp) / 1000000000
+                Seconds = nano / 1_000_000_000,
+                Nanos = Convert.ToInt32(nano % 1_000_000_000),
             }
         });
 
@@ -78,14 +81,18 @@ public class LokiTarget : AsyncTaskTarget
                     orderedEvents = gp.OrderBy(e => e.Timestamp);
 
                 foreach(var @event in gp)
+                {
+                    var nano = UnixDateTimeConverter.ToUnixTimeNs(@event.Timestamp);
                     stream.Entries.Add(new EntryAdapter()
                     {
                         Line = @event.Line,
                         Timestamp = new Google.Protobuf.WellKnownTypes.Timestamp
                         {
-                            Seconds = UnixDateTimeConverter.ToUnixTimeNs(@event.Timestamp)
+                            Seconds = nano / 1_000_000_000,
+                            Nanos = Convert.ToInt32(nano % 1_000_000_000),
                         }
                     });
+                }
                 return stream;
             });
 
