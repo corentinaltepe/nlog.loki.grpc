@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Grpc.Net.Client;
 using Logproto;
 using NLog.Config;
+using NLog.Layouts;
 using NLog.Loki.gRPC.Model;
 using NLog.Targets;
 using static Logproto.Pusher;
@@ -34,7 +35,7 @@ public class LokiTarget : AsyncTaskTarget
     {
         base.InitializeTarget();
 
-        _channel = GrpcChannel.ForAddress(RenderLogEvent(EndPoint, LogEventInfo.CreateNullEvent()));
+        _channel = GrpcChannel.ForAddress(RenderLogEvent(Endpoint, LogEventInfo.CreateNullEvent()));
         _pusherClient = new PusherClient(_channel);
     }
 
