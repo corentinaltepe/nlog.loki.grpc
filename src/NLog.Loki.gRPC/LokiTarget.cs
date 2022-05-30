@@ -54,7 +54,7 @@ public class LokiTarget : AsyncTaskTarget
             Line = @event.Line,
             Timestamp = new Google.Protobuf.WellKnownTypes.Timestamp
             {
-                Seconds = UnixDateTimeConverter.ToUnixTimeNs(@event.Timestamp)
+                Seconds = UnixDateTimeConverter.ToUnixTimeNs(@event.Timestamp) / 1000000000
             }
         });
 
