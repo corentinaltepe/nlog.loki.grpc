@@ -1,7 +1,7 @@
 using NLog.Config;
 using NLog.Layouts;
 
-namespace NLog.Loki
+namespace NLog.Loki.Grpc
 {
     [NLogConfigurationItem]
     public class LokiTargetLabel

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using NLog.Loki.gRPC.Model;
+using NLog.Loki.Grpc.Model;
 using NUnit.Framework;
 
-namespace NLog.Loki.gRPC.Tests.Model
+namespace NLog.Loki.Grpc.Tests.Model
 {
     [TestFixture]
     public class LokiLabelsTests

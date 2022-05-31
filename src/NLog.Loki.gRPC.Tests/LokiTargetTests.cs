@@ -4,7 +4,7 @@ using NLog.Layouts;
 using NLog.Targets.Wrappers;
 using NUnit.Framework;
 
-namespace NLog.Loki.gRPC.Tests;
+namespace NLog.Loki.Grpc.Tests;
 
 [TestFixture]
 public class LokiTargetTests

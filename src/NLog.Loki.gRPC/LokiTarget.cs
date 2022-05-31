@@ -7,11 +7,11 @@ using Grpc.Net.Client;
 using Logproto;
 using NLog.Config;
 using NLog.Layouts;
-using NLog.Loki.gRPC.Model;
+using NLog.Loki.Grpc.Model;
 using NLog.Targets;
 using static Logproto.Pusher;
 
-namespace NLog.Loki;
+namespace NLog.Loki.Grpc;
 
 [Target("loki.grpc")]
 public class LokiTarget : AsyncTaskTarget

@@ -1,7 +1,7 @@
 using System;
 using NUnit.Framework;
 
-namespace NLog.Loki.gRPC.Tests;
+namespace NLog.Loki.Grpc.Tests;
 
 internal class UnixDateTimeConverterTests
 {

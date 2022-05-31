@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NLog.Loki.gRPC.Model
+namespace NLog.Loki.Grpc.Model
 {
     public class LokiLabels : IEquatable<LokiLabels>
     {

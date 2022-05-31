@@ -1,6 +1,6 @@
 using System;
 
-namespace NLog.Loki.gRPC.Model
+namespace NLog.Loki.Grpc.Model
 {
     public class LokiEvent
     {
