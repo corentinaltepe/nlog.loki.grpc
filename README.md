@@ -1,18 +1,16 @@
 # NLog Loki gRPC Target
 
-> This library is not production ready. This is a work in progress!
-
 ![Build](https://github.com/corentinaltepe/nlog.loki.grpc/workflows/Build/badge.svg)
 [![NuGet](https://img.shields.io/nuget/v/NLog.Targets.Loki.gRPC)](https://www.nuget.org/packages/NLog.Targets.Loki.gRPC)
 [![codecov](https://codecov.io/gh/corentinaltepe/nlog.loki.grpc/branch/master/graph/badge.svg?token=84N5XB4J09)](https://codecov.io/gh/corentinaltepe/nlog.loki.grpc)
 
-This is an [NLog](https://nlog-project.org/) target that sends messages to [Loki](https://grafana.com/oss/loki/) using Loki's with a gRPC client.
+This is an [NLog](https://nlog-project.org/) target that sends messages to [Loki](https://grafana.com/oss/loki/) using Loki's with a gRPC client. For HTTP client, use [this target](https://github.com/corentinaltepe/nlog.loki) instead.
 
 > Loki is a horizontally-scalable, highly-available, multi-tenant log aggregation system inspired by Prometheus. It is designed to be very cost effective and easy to operate.
 
 ## Installation
 
-The NLog.Loki NuGet package can be found [here](https://www.nuget.org/packages/NLog.Targets.Loki.gRPC). You can install it via one of the following commands below:
+The NLog.Targets.Loki.gRPC NuGet package can be found [here](https://www.nuget.org/packages/NLog.Targets.Loki.gRPC). You can install it via one of the following commands below:
 
 NuGet command:
 
@@ -24,7 +22,7 @@ NuGet command:
 
 ## Usage
 
-Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Register-your-custom-component) `NLog.Loki` as an extension assembly with NLog. You can now add a Loki target [to your configuration file](https://github.com/nlog/nlog/wiki/Tutorial#Configure-NLog-Targets-for-output):
+Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Register-your-custom-component) `NLog.Loki.gRPC` as an extension assembly with NLog. You can now add a Loki target [to your configuration file](https://github.com/nlog/nlog/wiki/Tutorial#Configure-NLog-Targets-for-output):
 
 ```xml
 <nlog xmlns="http://www.nlog-project.org/schemas/NLog.xsd"
